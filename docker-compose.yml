@@ -1,0 +1,29 @@
+version: '3.4'
+
+networks:
+  mynetwork:
+    name: mynetwork
+    attachable: true
+
+services:
+
+  nginx_netiq_ubuntu18.04:
+    container_name: nginx-oidc-netiq
+    build:
+      context: ./
+      dockerfile: ./docker/docker-files/nginxplus-ubuntu18.04/Dockerfile
+    image: nginx_netiq_ubuntu18.04
+    ports:
+      - 11000:11000
+    volumes:
+      - type: bind
+        source: ./
+        target: /etc/nginx/conf.d/
+      - type: bind
+        source: ./docker/build-context/nginx/test/
+        target: /etc/nginx/test/
+      - type: bind
+        source: ./docker/build-context/content
+        target: /usr/share/nginx/html/
+    networks:
+      - mynetwork
