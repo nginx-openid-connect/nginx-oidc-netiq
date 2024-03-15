@@ -1,6 +1,6 @@
-# nginx-netiq-access-manager
+# nginx-oidc-netiq
 
-Reference implementation of NGINX Plus as relying party for OpenID Connect authentication w/ NetIQ Access Manager.
+Reference implementation of NGINX Plus as relying party for OpenID Connect authentication w/ **NetIQ Access Manager**.
 
 This repo provides the information of how to set up NetIQ Access Manager, integrate with NGINX Plus, and locally test using a containerized NGINX Plus based service and a frontend OIDC simulation tool.
 
