@@ -7,14 +7,16 @@ networks:
 
 services:
 
-  nginx_netiq_ubuntu18.04:
+  nginx_oidc_netiq:
     container_name: nginx-oidc-netiq
     build:
       context: ./
       dockerfile: ./docker/docker-files/nginxplus-ubuntu18.04/Dockerfile
-    image: nginx_netiq_ubuntu18.04
+    image: nginx_oidc_netiq
     ports:
       - 19000:19000
+      - 20000:20000
+      - 9443:9443
     volumes:
       - type: bind
         source: ./
@@ -25,5 +27,45 @@ services:
       - type: bind
         source: ./docker/build-context/content
         target: /usr/share/nginx/html/
+    networks:
+      - mynetwork
+
+  keycloak24:
+    container_name: keycloak24
+    image: quay.io/keycloak/keycloak:24.0.2
+    ports:
+      - 8080:8080
+      - 8443:8443
+    volumes:
+      - ./docker/build-context/ssl/kc_temp.crt:/etc/x509/https/tls.crt
+      - ./docker/build-context/ssl/kc_temp.key:/etc/x509/https/tls.key
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HOSTNAME: host.docker.internal
+      KC_HTTPS_CERTIFICATE_FILE: /etc/x509/https/tls.crt
+      KC_HTTPS_CERTIFICATE_KEY_FILE: /etc/x509/https/tls.key
+    command:
+      start-dev
+    networks:
+      - mynetwork
+
+  keycloak21:
+    container_name: keycloak21
+    image: quay.io/keycloak/keycloak:21.0.0
+    ports:
+      - 9080:8080
+      - 7443:8443
+    volumes:
+      - ./docker/build-context/ssl/kc_temp.crt:/etc/x509/https/tls.crt
+      - ./docker/build-context/ssl/kc_temp.key:/etc/x509/https/tls.key
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HOSTNAME: host.docker.internal
+      KC_HTTPS_CERTIFICATE_FILE: /etc/x509/https/tls.crt
+      KC_HTTPS_CERTIFICATE_KEY_FILE: /etc/x509/https/tls.key
+    command:
+      start-dev
     networks:
       - mynetwork
