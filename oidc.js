@@ -29,6 +29,8 @@ var newSession = false;
 export default {
     auth,
     codeExchange,
+    accessTokenClaims,
+    idTokenClaims,
     logout,
     redirectPostLogin,
     redirectPostLogout,
@@ -192,8 +194,10 @@ function logout(r) {
     // Call the IDP logout endpoint with custom query parameters
     // if the IDP doesn't support RP-initiated logout.
     } else {
-        queryParams = '?' + generateQueryParams(
-            r.variables.oidc_logout_query_params);
+        if (r.variables.oidc_logout_query_params) {
+            queryParams = '?' + generateQueryParams(
+                r.variables.oidc_logout_query_params);
+        }
     }
     r.variables.session_id    = '-';
     r.variables.id_token      = '-';
@@ -847,4 +851,39 @@ function isValidXClientId(r) {
         }
     }
     return true
+}
+
+/**
+ * Return access token claims
+ *
+ * @param r {Request} HTTP request object
+ * @returns {string} access token claims
+ */
+function accessTokenClaims(r) {
+    const payload = jwt(r.variables.access_token).payload
+    return JSON.stringify(payload);
+}
+
+/**
+ * Return ID token claims
+ *
+ * @param r {Request} HTTP request object
+ * @returns {string} ID token claims
+ */
+function idTokenClaims(r) {
+    const payload = jwt(r.variables.id_token).payload
+    return JSON.stringify(payload);
+}
+
+/**
+ * Return headers and payload from JWT
+ *
+ * @param data {string} JWT
+ * @returns {string} headers and payload
+ */
+function jwt(data) {
+    let parts = data.split('.').slice(0,2)
+        .map(v=>Buffer.from(v, 'base64url').toString())
+        .map(JSON.parse)
+    return { headers: parts[0], payload: parts[1]}
 }

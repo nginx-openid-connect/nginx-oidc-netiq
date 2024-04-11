@@ -19,20 +19,12 @@
       <div class="sr-main">
         <section class="container">
           <div>
-            <h1>NGINX Plus OIDC</h1>
+            <h1>OIDC/SSO Test Tool</h1>
             <h4>Sample page for testing Open ID Connect.</h4>
-
-            <div class="pasha-image">
-              <img
-                src="https://picsum.photos/280/320?random=4"
-                width="320"
-                height="160"
-              />
-            </div>
           </div>
           
           <br>
-          <h4>Enter an IdP app's client ID:</h4>
+          <h4>(Optional) Enter a client ID for testing multi-apps:</h4>
           <input type="text" id="client-id" value="my-client-id" name="client-id" />
 
           <button type="submit" id="signin">Sign in</button>
@@ -41,7 +33,9 @@
           <h4>Enter an URI for testing an API w/ access-token:</h4>
           <input type="text" id="sample-uri" value="/v1/api/example" name="sample-uri" />
 
-          <button type="submit" id="proxied-api">Call a Proxied API</button>
+          <button type="submit" id="proxied-api">Call a proxied API</button>
+          <button type="submit" id="id-token-claims">Get ID token claims</button>
+          <button type="submit" id="access-token-claims">Get access token claims</button>
           
           <br>
           <input style="background-color:aliceblue" style="border-color:aliceblue" "text" id="message" value="Guest" name="message" disabled/>

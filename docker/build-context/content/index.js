@@ -5,20 +5,22 @@
  */
 
 // Constants for common error message.
-var isSignedIn        = false;
-var TITLE_SIGNIN      = 'Sign in';
-var TITLE_SIGNOUT     = 'Sign out';
-var MSG_SIGNINIG_IN   = 'Signinig in';
-var MSG_SIGNED_IN     = 'Signed in';
-var MSG_SIGNED_OUT    = 'Signed out';
-var MSG_EMPTY_JSON    = '{"message": "N/A"}';
-var DEFAULT_CLIENT_ID = 'my-client-id';
-var btnSignin         = document.getElementById('signin');
-var btnProxiedAPI     = document.getElementById('proxied-api');
-var jsonViewer        = new JSONViewer();
-var viewerJSON        = document.querySelector("#json").appendChild(jsonViewer.getContainer());
-var accessToken       = '';
-var userName          = '';
+var isSignedIn           = false;
+var TITLE_SIGNIN         = 'Sign in';
+var TITLE_SIGNOUT        = 'Sign out';
+var MSG_SIGNINIG_IN      = 'Signinig in';
+var MSG_SIGNED_IN        = 'Signed in';
+var MSG_SIGNED_OUT       = 'Signed out';
+var MSG_EMPTY_JSON       = '{"message": "N/A"}';
+var DEFAULT_CLIENT_ID    = 'default-client-id';
+var btnSignin            = document.getElementById('signin');
+var btnProxiedAPI        = document.getElementById('proxied-api');
+var btnIdTokenClaims     = document.getElementById('id-token-claims');
+var btnAccessTokenClaims = document.getElementById('access-token-claims');
+var jsonViewer           = new JSONViewer();
+var viewerJSON           = document.querySelector("#json").appendChild(jsonViewer.getContainer());
+var accessToken          = '';
+var userName             = '';
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -36,14 +38,18 @@ var initButtons = function () {
 
 
 var initButtonsBeforeSignIn = function () {
-  btnProxiedAPI.disabled = true
-  isSignedIn             = false;
+  btnProxiedAPI.disabled        = true
+  btnIdTokenClaims.disabled     = true
+  btnAccessTokenClaims.disabled = true
+  isSignedIn                    = false;
   showLoginBtnTitle(TITLE_SIGNIN);
 }
 
 var initButtonsAfterSignIn = function () {
-  btnProxiedAPI.disabled = false
-  isSignedIn             = true;
+  btnProxiedAPI.disabled        = false
+  btnIdTokenClaims.disabled     = false
+  btnAccessTokenClaims.disabled = false
+  isSignedIn                    = true;
   showLoginBtnTitle(TITLE_SIGNOUT);
 }
 
@@ -62,9 +68,9 @@ var eventHandlerSignIn = function (evt) {
   }
 };
 
-// Event Handler: for when clicking a 'Backend API w/ Cookie + Bearer' button.
-// - /v1/api/2: cookie is used. The bearer access token is also passed to the 
-//              backend API via `proxy_set_header Authorization` directive.
+// Event Handler: for when clicking a 'Call a proxied API' button.
+// /v1/api/example: cookie is used. The bearer access token is also passed to the
+//                  backend API via `proxy_set_header Authorization` directive.
 var eventHandlerProxiedAPI = function (evt) {
   var headers = {};
   doAPIRequest(
@@ -76,6 +82,29 @@ var eventHandlerProxiedAPI = function (evt) {
   )
 };
 
+// Event Handler: for when clicking a 'Get ID token claims' button.
+var eventHandlerIdTokenClaims = function (evt) {
+  var headers = {};
+  doAPIRequest(
+    evt,
+    '/v1/api/idtoken',
+    'getting ID token claims...',
+    'called an API to get ID token claims',
+    headers
+  )
+};
+
+// Event Handler: for when clicking a 'Get access token claims' button.
+var eventHandlerAccessTokenClaims = function (evt) {
+  var headers = {};
+  doAPIRequest(
+    evt,
+    '/v1/api/accesstoken',
+    'getting access token claims...',
+    'called an API to get access token claims',
+    headers
+  )
+};
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                             *
@@ -91,8 +120,17 @@ var doNginxEndpointRequest = function(evt, uri) {
   location.href = window.location.origin + uri;
 };
 
+var eraseAllCookies = function() {
+  eraseCookie('session_id')
+  eraseCookie('auth_redir')
+  eraseCookie('auth_nonce')
+  eraseCookie('client_id')
+  sessionStorage.clear()
+  localStorage.clear()
+}
+
 var eraseCookie = function(name) {
-  document.cookie = name+'=; Path=/; SameSite=lax;';  
+  document.cookie = name+'=; Path=/; SameSite=lax; username=; expires=Thu, 01 Jan 1970 00:00:00 UTC; HttpOnly; Secure;';
 }
 
 var setCookie = function(name, value) {
@@ -101,11 +139,6 @@ var setCookie = function(name, value) {
 
 // Sign in by clicking 'Sign In' button of the UI.
 var doSignIn = function(evt) {
-  eraseCookie('session_id')
-  eraseCookie('auth_redir')
-  eraseCookie('auth_nonce')
-  eraseCookie('client_id')
-
   var x_client_id = getClientId();
   setCookie('client_id', x_client_id)
   doNginxEndpointRequest(evt, '/login');
@@ -261,8 +294,10 @@ var getCookieValue = function(key) {
 }
 
 // Add event lister of each button for testing NGINX Plus OIDC integration.
-btnSignin    .addEventListener('click', eventHandlerSignIn);
-btnProxiedAPI.addEventListener('click', eventHandlerProxiedAPI);
+btnSignin           .addEventListener('click', eventHandlerSignIn);
+btnProxiedAPI       .addEventListener('click', eventHandlerProxiedAPI);
+btnIdTokenClaims    .addEventListener('click', eventHandlerIdTokenClaims);
+btnAccessTokenClaims.addEventListener('click', eventHandlerAccessTokenClaims);
 
 showUserInfo(null)
 showClientIdFromCookie()
